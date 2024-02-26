@@ -4,18 +4,18 @@ import replicate
 import ffmpeg
 
 # system prompts
-from prompt_strings import progress_note, treatment_plan_update
+# from prompt_strings import progress_note, treatment_plan_update
 
 model = whisper.load_model("base")
 
 # upload audio file with streamlit in the sidebar
-audio_file = st.sidebar.file_uploader("Upload Audio", type=["wav", "mp3", "m4a", "mp4"])
+audio_file = st.sidebar.file_uploader("Upload Audio", type=["wav", "mp3", "m4a"])
 
 st.title("Transcribe & Summarize Patient Conversations")
 patient_name = st.text_input('Enter patient name.', 'Jane Doe')
 practioner_name = st.text_input('Enter practioner name.', 'Jane Smith, LCSW')
 date = st.text_input('Enter date of session, DD-MM-YYYY format', '02-18-2024')
-note_type = st.selectbox('Transcribed Note Template', ('GIRP', 'placeholder= 'Select the type of progress note')
+note_type = st.selectbox('Transcribed Note Template', ('GIRP', 'TEST'), placeholder= 'Select the type of progress note')
 
 # transcription text inferenced by whisper - this is the output of whisper
 transcription_text = ""
@@ -50,7 +50,7 @@ output = replicate.run(
         "temperature": 0.5,
         "system_prompt": """You are a tool that takes the transcription of progress notes and/or intake assessments. If the text you recieve is an intake assessment, proceed with usual documentation protocol.
         Otherwise, ensure the progress note is accurately summarize in a way useful for physician/practioner records. Utilize markdown formatting""",
-        "prompt": txt,
+        "prompt": transcription_text,
         "max_new_tokens": 500,
         "min_new_tokens": -1
     },
