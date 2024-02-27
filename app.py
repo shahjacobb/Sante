@@ -27,13 +27,18 @@ if transcribe_button:
         st.sidebar.success("Transcribing Audio")
         # TEXT IS TRANSCRIBED HERE FULLY, 
         transcription_text, info = asr_model.transcribe(audio_file.name)
+        st.session_state['parsed_text'] = ''
         st.sidebar.success("Transcription Complete")
-        \
-        st.session_state.transcribed_text = "".join(substrings.text for substrings in transcription_text)
-        print(st.session_state.transcribed_text)
         
         for segment in transcription_text:
-            st.write(segment.text)
+            # this just writes each chunk of the transcription (segment.text) right to streamlit
+            # st.write(segment.text)
+            st.session_state['parsed_text'] += segment.text
+            ""
+        print("okay, let's test if the parsed string is accessible. it might take some time.")
+
+        print(st.session_state['parsed_text'])
+        
     else:
         st.sidebar.error("Please upload the recording of the session with the patient")
 
@@ -42,7 +47,8 @@ if audio_file is not None:
     st.sidebar.audio(audio_file)
 
 
-if 'transcribed_text' in st.session_state:
+if 'parsed_text' in st.session_state:
+    
     output = replicate.run(
     "mistralai/mistral-7b-instruct-v0.2",
     input={
@@ -50,16 +56,15 @@ if 'transcribed_text' in st.session_state:
         "top_k": 50,
         "top_p": 1,
         "temperature": 0.5,
+        "prompt": st.session_state['parsed_text'],
         "system_prompt": "Make a Google Doc like support for national intelligence of the Pentagon summarizing this.",
-        "prompt": st.session_state.transcribed_text,
         "max_new_tokens": 500,
         "min_new_tokens": -1
     },
     )
     joined_transcribed_text = "".join(i for i in output)
     st.write(joined_transcribed_text)
-else:
-    st.warning('Please transcribe the audio first.')
+
 
 
 
