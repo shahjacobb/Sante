@@ -1,10 +1,15 @@
 # Sante - Transcription of Conversations and Generation of Progress Notes for Mental Health Professionals
 
+![Output Post Successful Transcription + Inference Call to LLama-2-70b](output-of-streamlit-after-llama2-70b-response.png)
+
+
 *Sante* is an AI-powered transcription and note taking assistant for licensed mental health practioners (talk therapists, psychiatrists, etc). It transcribes patient-provider/physician conversations using [OpenAI's Whisper](https://github.com/openai/whisper) and then lets the provider choose between progress notes, intake assessments, and assesment notes. Upon selection, the output of the transcription is forwarded to LLama-2-70B. This is done using [Replicate](https://replicate.com/meta/llama-2-70b-chat) (none of the inference is done locally), making this *faster than trying to do the inference locally, and no need to have 128GB VRAM and a $30,000 H100 .
 
 Currently, it has a working MVP built with the very easy to work with [Streamlit](https://streamlit.io/cloud). 
 
+Here's a look at the system prompt and an example of what prompts look like after being successfully transcribed by faster-whisper.
 
+![Prompt and System Prompt](prompt_and_system-prompt-for-llama2-70b.png)
 
 ## To Dos
 * A no brainer, but authentication/user accounts. These progress notes need to have rock solid security. Everything needs to be HIPAA compliant. Recordings, transcriptions, and notes need to be secure. Thankfully, that's not hard if we migrate to ... . 
@@ -15,7 +20,8 @@ Currently, it has a working MVP built with the very easy to work with [Streamlit
 
 Instructions 
 
-1. Clone this repo, and run `pip install requirements.txt`. That'll get streamlit, pytorch, whisper, ffmpeg, replicate, torchaudio, and numpy installed. 
+1. Clone this repo, and run `pip install requirements.txt`. That'll get streamlit, pytorch, faster-whisper, ffmpeg, replicate, torchaudio, and numpy installed. 
+    * When setting up whisper, make sure you pick the right model size and compute. If you try to do `int16` when your computer doesn't support it, it won't fit. I used `int8`.
 2. Get an API token from Replicate since you'll need to utilize LLama-2-70b (or really, any LLM available there that's often used to reduce the odds of a coldstart every call)
 3. Set up billing with Replicate (an entire 1 million for 10 cents, which is *nuts*).
 4. Have an audio file ready. I use `ffmpeg` to convert wavs to mp3, extra mp4s from mp3s, slice/crop a part of mp3 etc.

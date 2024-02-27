@@ -16,7 +16,7 @@ st.title("Transcribe & Summarize Patient Conversations")
 patient_name = st.text_input('Enter patient name.', 'Jane Doe')
 practioner_name = st.text_input('Enter practioner name.', 'Jane Smith, LCSW')
 date = st.text_input('Enter date of session, DD-MM-YYYY format', '02-18-2024')
-note_type = st.selectbox('Transcribed Note Template', ('GIRP', 'TEST'), placeholder= 'Select the type of progress note')
+# will add this functiolaity later: note_type = st.selectbox('Transcribed Note Template', ('GIRP', 'TEST'), placeholder= 'Select the type of progress note')
 
 
 # Transcribe button
@@ -34,13 +34,8 @@ if transcribe_button:
             # this just writes each chunk of the transcription (segment.text) right to streamlit
             # st.write(segment.text)
             st.session_state['parsed_text'] += segment.text
-            ""
-        print("okay, let's test if the parsed string is accessible. it might take some time.")
 
         print(st.session_state['parsed_text'])
-        
-    else:
-        st.sidebar.error("Please upload the recording of the session with the patient")
 
 st.sidebar.header("Play Original Audio File")
 if audio_file is not None:
@@ -48,22 +43,25 @@ if audio_file is not None:
 
 
 if 'parsed_text' in st.session_state:
-    
     output = replicate.run(
-    "mistralai/mistral-7b-instruct-v0.2",
+    "meta/llama-2-70b-chat",
     input={
-        "debug": False,
+        "prompt": f"patient name: {patient_name}, practioner_name: {practioner_name}: date: {date}" + "Conversation:\n" + st.session_state['parsed_text'],
+        "system_prompt": """You are a helpful AI assistant to counscelors/therapists/psychiatrists that summarizes the transcription of the conversation in a highly organized and well written progress note. 
+        Make sure it is formatted well (name, practioner name, date are provided to you already)
+        Do not make up medication history. Only summarize what is given to you. Since it will be a conversation between two people, DO NOT write down what you/the interviewer says. YOU ARE NOT THE PATIENT. 
+        Take great care to differentiate who is who and only write what the patient says.""",
+        "debug": True,
         "top_k": 50,
         "top_p": 1,
         "temperature": 0.5,
-        "prompt": st.session_state['parsed_text'],
-        "system_prompt": "Make a Google Doc like support for national intelligence of the Pentagon summarizing this.",
         "max_new_tokens": 500,
         "min_new_tokens": -1
     },
     )
-    joined_transcribed_text = "".join(i for i in output)
-    st.write(joined_transcribed_text)
+    joined_note_output = "".join(i for i in output)
+    st.write(joined_note_output)
+
 
 
 
