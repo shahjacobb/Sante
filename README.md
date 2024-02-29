@@ -7,6 +7,10 @@
 
 Currently, it has a working MVP built with the very easy to work with [Streamlit](https://streamlit.io/cloud). 
 
+Here's what segment by segment output of faster-whisper looks like given a 22 minute audio clip of a person experiencing anxiety disorder:
+
+![gif of whisper](faster-whisper-segment-output.gif)
+
 Here's a look at the system prompt and an example of what prompts look like after being successfully transcribed by faster-whisper.
 
 ![Prompt and System Prompt](prompt_and_system-prompt-for-llama2-70b.png)
