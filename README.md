@@ -9,7 +9,7 @@ Currently, it has a working MVP built with the very easy to work with [Streamlit
 
 Here's what segment by segment output of faster-whisper looks like given a 22 minute audio clip of a person experiencing anxiety disorder:
 
-![gif of whisper](faster-whisper-segment-output.gif)
+![](faster-whisper-segment-output.mp4)
 
 Here's a look at the system prompt and an example of what prompts look like after being successfully transcribed by faster-whisper.
 
