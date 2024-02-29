@@ -12,6 +12,9 @@ asr_model = WhisperModel('tiny', device="cpu", compute_type="int8")
 # upload audio file with streamlit in the sidebar
 audio_file = st.sidebar.file_uploader("Upload Audio", type=["wav", "mp3", "m4a"])
 
+# if audio_file.name.str.endswith(('.wav', 'm4a')):
+
+
 st.title("Transcribe & Summarize Patient Conversations")
 patient_name = st.text_input('Enter patient name.', 'Jane Doe')
 practioner_name = st.text_input('Enter practioner name.', 'Jane Smith, LCSW')
@@ -33,9 +36,8 @@ if transcribe_button:
         for segment in transcription_text:
             # this just writes each chunk of the transcription (segment.text) right to streamlit
             # st.write(segment.text)
+            print(segment.text)
             st.session_state['parsed_text'] += segment.text
-
-        print(st.session_state['parsed_text'])
 
 st.sidebar.header("Play Original Audio File")
 if audio_file is not None:
