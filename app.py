@@ -46,11 +46,11 @@ if 'parsed_text' in st.session_state:
     "meta/llama-2-70b-chat",
     input={
         "prompt": f"patient name: {patient_name}, practioner_name: {practioner_name}: date: {date}" + "Conversation:\n" + st.session_state['parsed_text'],
-        "system_prompt": """You are a helpful AI assistant to counscelors/therapists/psychiatrists that summarizes the transcription of the conversation in a highly organized and well written progress note. 
-        Make sure it is formatted well (name, practioner name, date are provided to you already)
+        "system_prompt": """Llama, you are a helpful AI assistant to mental health professionals and therapists that SUMMARIZES (not repeat) the transcription of between a patient and practioner in a highly organized and well written progress note meant for therapists to use. Follow proper protocol for therapists as progress notes are part of their clinical responsibilities.
+        Make sure it is formatted well (name, practioner name, date are provided to you already).
         Do not make up medication history. ONLY summarize what is given to you. Only include things like social history, medication, etc IF SPECIFIED. 
         DO NOT offer treatment plan/coping mechanisms.
-        Since it will be a conversation between two people, DO NOT write down what you/the interviewer says. YOU ARE NOT THE PATIENT. 
+        Since it will be a conversation between two people, DO NOT write down what you/the interviewer says.  
         Take great care to differentiate who is who and only write what the patient says.""",
         "debug": True,
         "top_k": 50,
@@ -62,8 +62,7 @@ if 'parsed_text' in st.session_state:
     )
     joined_note_output = "".join(i for i in output)
     st.write(joined_note_output)
-    export_btn = st.button('Export Progress Note as PDF')
-
+    # will add functionality later - export_btn = st.button('Export Progress Note as PDF')
     # this is how streamlit handles event listeners, just check if true
 
 # streamlit's magic automatically writes triple strings ... so 
