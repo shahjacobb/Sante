@@ -1,13 +1,12 @@
 import pandas as pd 
 import numpy as np
+import json
 import streamlit as st
-import base64
 from faster_whisper import WhisperModel
 import replicate
-import ffmpeg
-import logging
 
-
+# few-shot and zero-shot prompts for llama
+from system_prompts import few_shot_prompt
 # logging.basicConfig(level = logging.DEBUG)
 # logger = logging.getLogger(__name__)
 
@@ -19,6 +18,9 @@ date = st.text_input('Enter date of session, DD-MM-YYYY format', '02-18-2024')
 model = "small"
 asr_model = WhisperModel('small', device="cpu", compute_type="int8")
 
+transcribed_df = pd.DataFrame(columns = ['Start (seconds)', 'End (seconds)', 'Text'])
+
+segment_count = 0
 sentiment_categories = {
     "fear": np.nan,
     "anger": np.nan,
@@ -30,11 +32,6 @@ sentiment_categories = {
     "anticipation": np.nan,
     # Add more sentiment categories as needed
 }
-
-transcribed_df = pd.DataFrame(columns = ['Start (seconds)', 'End (seconds)', 'Text'])
-
-
-
 audio_file = st.sidebar.file_uploader("Upload Audio", type=["wav", "mp3", "m4a"])
 # Transcribe button
 transcribe_button = st.sidebar.button("Transcribe Audio")
@@ -46,24 +43,25 @@ if transcribe_button:
             transcription_text, info = asr_model.transcribe(audio_file.name)
             st.session_state['parsed_text'] = ''
             
-            for i, v in enumerate(transcription_text):
+            for i, segment in enumerate(transcription_text):
                 # this just writes each chunk of the transcription (segment.text) right to streamlit
                 # st.write(segment.text)
-                st.session_state['parsed_text'] += v.text
-                print(v.text)
-                transcribed_df.loc[i] = [v.start, v.end, v.text]
+                st.session_state['parsed_text'] += segment.text
+                print(f' Segment count: {segment_count}, text: {segment.text}')
+                # basically grabbing segment.text, segment.start, segment.end, and using the ugly loc method because panda deprecated append() recently
+                transcribed_df.loc[i] = [segment.start, segment.end, segment.text]
+                segment_count += 1
+            # using the segment categories dict to populate the data frame ahead of time with the sentiment columns. each column is a float64 between 0 and 1 for the sentiment
             for k, vals in sentiment_categories.items():
                 transcribed_df[k] = vals
-            st.sidebar.success("Transcription Complete")
-            st.dataframe(transcribed_df)
-            st.write(transcribed_df.dtypes)
         
         
                  
-# st.sidebar.header("Play Original Audio File")
-# if audio_file is not None:
-#     st.sidebar.audio(audio_file)
+st.sidebar.header("Play Original Audio File")
+if audio_file is not None:
+    st.sidebar.audio(audio_file)
 
+# # Progress Note 
 # if 'parsed_text' in st.session_state:
 #     output = replicate.run(
 #     "meta/llama-2-70b-chat",
@@ -85,3 +83,50 @@ if transcribe_button:
 #     )
 #     joined_note_output = "".join(i for i in output)
 #     st.write(joined_note_output)
+
+
+# Sentiment Analysis Portion
+
+for index, row in transcribed_df.iterrows():
+    segment_text = row["Text"]
+    output = ""
+    output_to_dict = {}
+    for event in replicate.stream(
+            "meta/llama-2-70b-chat",
+            input={
+                "debug": False,
+                "top_k": 50,
+                "top_p": 1,
+                "prompt": segment_text,
+                "temperature": 0.5,
+                "system_prompt": few_shot_prompt,
+                "max_new_tokens": 500,
+                "min_new_tokens": -1
+            },
+    ):
+        output += str(event)
+    
+        
+    print(output)
+    print(json.loads(output))
+
+    output_to_dict = json.loads(output)
+
+
+    for key, value in output_to_dict.items():
+         if key in transcribed_df.columns:
+              transcribed_df.at[index, key] = value
+
+    
+
+    
+st.dataframe(transcribed_df)
+
+# Filter out non-sentiment columns
+sentiment_df = transcribed_df[sentiment_categories.keys()]
+
+# Reset index to start from 1 instead of 0
+sentiment_df.index = sentiment_df.index + 1
+
+# Plot stacked area chart
+st.area_chart(sentiment_df)
