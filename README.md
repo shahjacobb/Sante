@@ -19,8 +19,10 @@ Here's a look at the system prompt and an example of what prompts look like afte
 
 * Implement long-term memory by using ChromaDB. Currently treatment_plan_updates and assessment_notes are yet to be implemented, since we need look at previous notes. We can't do any of that if the model doesn't have any embeddings/documents to gain long-term memory.
 * Microphone support. Absolute no brainer feature. We need to be able to let the user record audio and let each additional recording update each iteration of the transcription to make it all around comprehensive and more user-friendly. This also **makes recordings a lot more secure if done in a secure environment, making the need to hop onto a typical web app necessary**.
-* Sentiment analysis of conversation, will try to do by end of weekend 3/2/2024.
-* PDF support, also will need to try to finish by end of weekend 3/2/2024. Need to learn base64 encoding stuff.
+* Sentiment analysis of conversation, will try to do by end of weekend 3/3/2024.
+    - Half implemented. Created data frame and populated with `segment.text`, `segment.start`, `segment.end`. Populated sentiment categories in df. Implemented 3/3/2024. Need to now implement chunk-based iteration.
+
+~~* PDF support, also will need to try to finish by end of weekend 3/3/2024. Need to learn base64 encoding stuff.~~ not a priority
 
 Instructions 
 
@@ -32,3 +34,7 @@ Instructions
     * If you need it, converting an mp4 to mp3 (assuming your conversation was a video) is as easy as ``ffmpeg -i inputFile.mp4 outputFile.mp3``
 5. Run the service with `streamlit run app.py` (and enable 'Always rerun in the top right' to enable a debug-like mode)
 6. Use the service as needed.
+
+## Notes
+
+Variables inside try blocks in Python are accessible outside the block... meaning if the try block executes, you can access them later. Neat. 
