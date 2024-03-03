@@ -61,28 +61,28 @@ st.sidebar.header("Play Original Audio File")
 if audio_file is not None:
     st.sidebar.audio(audio_file)
 
-# # Progress Note 
-# if 'parsed_text' in st.session_state:
-#     output = replicate.run(
-#     "meta/llama-2-70b-chat",
-#     input={
-#         "prompt": f"patient name: {patient_name}, practioner_name: {practioner_name}: date: {date}" + "Conversation:\n" + st.session_state['parsed_text'],
-#         "system_prompt": """Llama, you are a helpful AI assistant to mental health professionals and therapists that SUMMARIZES (not repeat) the transcription of between a patient and practioner in a highly organized and well written progress note meant for therapists to use. Follow proper protocol for therapists as progress notes are part of their clinical responsibilities.
-#         Make sure it is formatted well (name, practioner name, date are provided to you already).
-#         Do not make up medication history. ONLY summarize what is given to you. Only include things like social history, medication, etc IF SPECIFIED. 
-#         DO NOT offer treatment plan/coping mechanisms.
-#         Since it will be a conversation between two people, DO NOT write down what you/the interviewer says.  
-#         Take great care to differentiate who is who and only write what the patient says.""",
-#         "debug": True,
-#         "top_k": 50,
-#         "top_p": 1,
-#         "temperature": 0.5,
-#         "max_new_tokens": 500,
-#         "min_new_tokens": -1
-#     },
-#     )
-#     joined_note_output = "".join(i for i in output)
-#     st.write(joined_note_output)
+# Progress Note 
+if 'parsed_text' in st.session_state:
+    output = replicate.run(
+    "meta/llama-2-70b-chat",
+    input={
+        "prompt": f"patient name: {patient_name}, practioner_name: {practioner_name}: date: {date}" + "Conversation:\n" + st.session_state['parsed_text'],
+        "system_prompt": """Llama, you are a helpful AI assistant to mental health professionals and therapists that SUMMARIZES (not repeat) the transcription of between a patient and practioner in a highly organized and well written progress note meant for therapists to use. Follow proper protocol for therapists as progress notes are part of their clinical responsibilities.
+        Make sure it is formatted well (name, practioner name, date are provided to you already).
+        Do not make up medication history. ONLY summarize what is given to you. Only include things like social history, medication, etc IF SPECIFIED. 
+        DO NOT offer treatment plan/coping mechanisms.
+        Since it will be a conversation between two people, DO NOT write down what you/the interviewer says.  
+        Take great care to differentiate who is who and only write what the patient says.""",
+        "debug": True,
+        "top_k": 50,
+        "top_p": 1,
+        "temperature": 0.5,
+        "max_new_tokens": 500,
+        "min_new_tokens": -1
+    },
+    )
+    joined_note_output = "".join(i for i in output)
+    st.write(joined_note_output)
 
 
 # Sentiment Analysis Portion
@@ -117,16 +117,10 @@ for index, row in transcribed_df.iterrows():
          if key in transcribed_df.columns:
               transcribed_df.at[index, key] = value
 
-    
 
-    
-st.dataframe(transcribed_df)
-
-# Filter out non-sentiment columns
+# filter out non-sentiment columns
 sentiment_df = transcribed_df[sentiment_categories.keys()]
-
-# Reset index to start from 1 instead of 0
+# start index at 1 to not look weird
 sentiment_df.index = sentiment_df.index + 1
-
-# Plot stacked area chart
+# stacked area chart
 st.area_chart(sentiment_df)

@@ -1,19 +1,35 @@
 # Sante - Transcription of Conversations and Generation of Progress Notes for Mental Health Professionals
 
-![Output Post Successful Transcription + Inference Call to LLama-2-70b](output-of-streamlit-after-llama2-70b-response.png)
+![Output Post Successful Transcription + Inference Call to LLama-2-70b](README_assets/output-of-streamlit-after-llama2-70b-response.png)
 
 
-*Sante* is an AI-powered transcription and note taking assistant for licensed mental health practioners (talk therapists, psychiatrists, etc). It transcribes patient-provider/physician conversations using [OpenAI's Whisper](https://github.com/openai/whisper) and then lets the provider choose between progress notes, intake assessments, and assesment notes. Upon selection, the output of the transcription is forwarded to LLama-2-70B. This is done using [Replicate](https://replicate.com/meta/llama-2-70b-chat) (none of the inference is done locally), making this *faster than trying to do the inference locally, and no need to have 128GB VRAM and a $30,000 H100 .
+*Sante* is an AI-powered transcription, note taking, and analytical assistant for licensed mental health practioners (talk therapists, psychiatrists, etc). 
+
+It transcribes patient-provider/physician conversations using [OpenAI's Whisper](https://github.com/openai/whisper) and then lets the provider choose between progress notes, intake assessments, and assesment notes. Upon selection, the output of the transcription is forwarded to LLama-2-70B. This is done using [Replicate](https://replicate.com/meta/llama-2-70b-chat) (none of the inference is done locally), making this many times faster than inferencing locally. Afterwards, the transcription segments of the conversation are analyzed segment-by-segment with 8 emotion catgories in order to perform sentiment analysis. It utilizes [few-shot prompting](https://www.promptingguide.ai/techniques/fewshot) (system prompting with examples) and [Panda dataframes](https://pandas.pydata.org/) in order to accomplish this. 
+
+Then, it plots the results in a stacked area chart.
 
 Currently, it has a working MVP built with the very easy to work with [Streamlit](https://streamlit.io/cloud). 
 
 Here's what segment by segment output of faster-whisper looks like given a 22 minute audio clip of a person experiencing anxiety disorder:
 
-![](faster-whisper-segment-output.mp4)
+![](README_assets/faster-whisper-segment-output.mp4)
 
-Here's a look at the system prompt and an example of what prompts look like after being successfully transcribed by faster-whisper.
+Here's an example of what a stacked-area-chart that plots the patient's emotion categories during the session looks like:
 
-![Prompt and System Prompt](prompt_and_system-prompt-for-llama2-70b.png)
+![](README_assets/bad_stacked_area_chart.png)
+
+The stacked area chart clearly needs a lot of work, but streamlit's ability to modify the graph is limited. 
+
+Here's a look at the zero-shot prompt and an example of what prompts look like after being successfully transcribed by faster-whisper.
+
+![Prompt and System Prompt](README_assets/prompt_and_system-prompt-for-llama2-70b.png)
+
+Here's a look at the few shot prompt that is used to get Llama-70b to perform sentiment  analysis on each emotion category:
+
+![](README_assets/few-shot-prompt.png)
+
+The idea is a Pandas dataframe is looped through, each row corresponding to one segment in the transcription predicted by `faster-whisper`. A call to Replicate is made for each segment, generating a Python dict which is then used to populate the dataframe's values. It is then plotted.
 
 ## To Dos
 
@@ -21,8 +37,10 @@ Here's a look at the system prompt and an example of what prompts look like afte
 * Microphone support. Absolute no brainer feature. We need to be able to let the user record audio and let each additional recording update each iteration of the transcription to make it all around comprehensive and more user-friendly. This also **makes recordings a lot more secure if done in a secure environment, making the need to hop onto a typical web app necessary**.
 * Sentiment analysis of conversation, will try to do by end of weekend 3/3/2024.
     - Half implemented. Created data frame and populated with `segment.text`, `segment.start`, `segment.end`. Populated sentiment categories in df. Implemented 3/3/2024. Need to now implement chunk-based iteration.
+    -** Done**. Sentiment categories are now populated with Replicate calls. Used `json.dumps()` to convert string response of Llama70b to dict. Area chart now works. 
+    Can't figure out opacity issue of stacked area chart but it works. 
 
-~~* PDF support, also will need to try to finish by end of weekend 3/3/2024. Need to learn base64 encoding stuff.~~ not a priority
+* ~~ PDF support, also will need to try to finish by end of weekend 3/3/2024. Need to learn base64 encoding stuff.~~ Not a priority.
 
 Instructions 
 
